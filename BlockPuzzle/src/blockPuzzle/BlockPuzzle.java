@@ -13,14 +13,21 @@ import java.util.Queue;
 public class BlockPuzzle {
   private static boolean debug = true;
 
-  private int[][] result; // 0 : empty, 1~N(n) : filled by item "n"
+  // Variable for the whole result board
+  private int[][] result; // -1 : empty, 1~N(n) : filled by item "n"
   private int result_height = 0, result_width = 0;
+  private static final String HTML_FILE = "./src/blockPuzzle/result.html";
 
+  // Class for each block
   public class Block {
+    // Size
     public int width;
     public int height;
+    // ID
     public int index;
+    // Allocated place
     public int[] edge = new int[2];
+    // Status
     public static final int UnUsed = 0, Using = 1, Used = 2;
     public int isUsed;
 
@@ -32,6 +39,8 @@ public class BlockPuzzle {
       edge[0] = 0;
       edge[1] = 0;
     }
+
+    // Status moved to not-allocated
     public void resetStatus() {
       isUsed = UnUsed;
       edge[0] = 0;
@@ -39,6 +48,7 @@ public class BlockPuzzle {
     }
   };
 
+  // Block Group
   private Queue<Block> blocks = new LinkedList<Block>();
   private int blockNumber = 0;
 
@@ -53,15 +63,17 @@ public class BlockPuzzle {
     if (debug) {
       bp1.printResult();
     }
-    if (bp1.runPuzzle()) {
+    boolean res = bp1.runPuzzle();
+    if (res) {
       System.out.println("success");
     } else {
       System.out.println("fail");
     }
     if (debug) {
       bp1.printResult();
-      bp1.outputAsHtml();
     }
+    bp1.outputAsHtml(res);
+    /*
     int N2 = 6, M2 = 4;
     BlockPuzzle bp2 = new BlockPuzzle(N2, M2);
     bp2.setTestData(2);
@@ -78,8 +90,27 @@ public class BlockPuzzle {
       bp2.printResult();
       bp2.outputAsHtml();
     }
+    */
+    int N3 = 6, M3 = 4;
+    BlockPuzzle bp3 = new BlockPuzzle(N3, M3);
+    bp3.setTestData(3);
+    bp3.initializeResultArea();
+    if (debug) {
+      bp3.printResult();
+    }
+    res = bp3.runPuzzle();
+    if (res) {
+      System.out.println("success");
+    } else {
+      System.out.println("fail");
+    }
+    if (debug) {
+      bp3.printResult();
+      bp3.outputAsHtml(res);
+    }
   }
 
+  // Constructor
   BlockPuzzle(int h, int w, Queue<Block> b) {
     result_height = h;
     result_width = w;
@@ -87,16 +118,19 @@ public class BlockPuzzle {
     result = new int[result_width][result_height];
   }
 
+  // Constructor
   BlockPuzzle(int h, int w) {
     result_height = h;
     result_width = w;
     result = new int[result_width][result_height];
   }
-  
+
+  // Add a block to Queue
   private void addBlock(Block b) {
     blocks.add(b);
   }
 
+  // Remove a block from Queue
   private Block removeBlock() {
     if (blocks.isEmpty()) {
       return null;
@@ -105,14 +139,19 @@ public class BlockPuzzle {
     return block;
   }
 
+  // Peek
   private Block peekBlock() {
     return blocks.peek();
   }
 
+  // Size of Queue
   private int countBlock() {
     return blocks.size();
   }
 
+  /*
+   * Initialize the result area (by setting result[][] as "-1")
+   */
   public void initializeResultArea() {
     for (int y = 0; y < result_height; y++) {
       for (int x = 0; x < result_width; x++) {
@@ -120,7 +159,11 @@ public class BlockPuzzle {
       }
     }
   }
-  
+
+  /*
+   * Main part of the Puzzle
+   *  Search starts from [0,0] to [N,M], try to allocate one by one.
+   */
   public boolean runPuzzle() {
     for (int i = 0; i < blockNumber; i++) {
       Block block = removeBlock();
@@ -134,13 +177,13 @@ public class BlockPuzzle {
         }
         block.isUsed = Block.Using;
         block.edge = pos;
-        if (allocateItem(block, pos)) {
+        if (allocateBlock(block, pos)) {
           block.isUsed = Block.Used;
-          if(runPuzzle()) {
+          if (runPuzzle()) {
             addBlock(block);
             return true;
           } else {
-            removeItem(block, pos);
+            removeBlock(block, pos);
             block.resetStatus();
           }
         } else {
@@ -151,7 +194,8 @@ public class BlockPuzzle {
     }
     return false;
   }
-  
+
+  // Print the result status to standard output
   private void printResult() {
     for (int y = 0; y < result_height; y++) {
       for (int x = 0; x < result_width; x++) {
@@ -160,41 +204,54 @@ public class BlockPuzzle {
       System.out.println();
     }
   }
-  
-  private void outputAsHtml() {
+
+  // Generate a HTML to show the result
+  private void outputAsHtml(boolean success) {
     StringBuilder builder = new StringBuilder();
-    int cell_size = 100;
-    builder.append("<!DOCTYPE html>");
-    builder.append("<html lang=\"en\">");
-    builder.append("<head><title>blockPuzzle</title></head>");
-    builder.append("<body><h1>The result of test block</h1></body>");
-    builder.append("<canvas id=\"result\" width=\" " + (result_width * 100 + 20) + "\" height=\" " + (result_height * 100 + 20) + "\">");
-    builder.append("<p>This html uses canvas style</p>");
-    builder.append("</canvas>");
-    builder.append("<script>");
-    builder.append("var start = 10;");
-    builder.append("var size = " + cell_size + ";");
-    builder.append("var canvas = document.getElementById('result');");
-    builder.append("var context = canvas.getContext('2d');");
-    while (true) {
-      Block block = removeBlock();
-      if (block == null) {
-        break;
+    builder.append("<!DOCTYPE html>\n");
+    builder.append("<html lang=\"en\">\n");
+    builder.append("<head><title>blockPuzzle</title></head>\n");
+    builder.append("<body><h1>The result of test block (" + result_height + "x" + result_width + " )</h1></body>\n");
+    if (success) {
+      int cell_size = 100;
+      builder.append("<canvas id=\"result\" width=\" " + (result_width * 100 + 20) + "\" height=\" "
+          + (result_height * 100 + 20) + "\">\n");
+      builder.append("<p>This html uses canvas style</p>\n");
+      builder.append("</canvas>\n");
+      builder.append("<script>\n");
+      builder.append("var start = 10;\n");
+      builder.append("var size = " + cell_size + ";\n");
+      builder.append("var canvas = document.getElementById('result');\n");
+      builder.append("var context = canvas.getContext('2d');\n");
+      while (true) {
+        Block block = removeBlock();
+        if (block == null) {
+          break;
+        }
+        builder.append("context.beginPath();\n");
+        int x_pos = cell_size * block.edge[0];
+        int y_pos = cell_size * block.edge[1];
+        int b_width = cell_size * block.width;
+        int b_height = cell_size * block.height;
+        builder.append("context.lineWidth = 5;\n");
+        builder.append("context.strokeRect(start + " + x_pos + ", start + " + y_pos + ", " + b_width
+            + ", " + b_height + ");\n");
+        builder.append("context.fillStyle = '#aaaaff';\n");
+        builder.append("context.fillRect(start + " + x_pos + ", start + " + y_pos + ", " + b_width
+          + ", " + b_height + ");\n");
+        builder.append("context.font = \"20px 'Arial'\";\n");
+        builder.append("context.lineWidth = 1;\n");
+        builder.append("context.strokeText('" + block.height + "x" + block.width + "', "
+            + (x_pos + b_width / 10) + ", " + (y_pos + b_height) + ");\n");
+        builder.append("context.closePath();\n");
       }
-      builder.append("context.beginPath();");
-      int x_pos = cell_size * block.edge[0];
-      int y_pos = cell_size * block.edge[1];
-      int b_width = cell_size * block.width;
-      int b_height = cell_size * block.height;
-      builder.append("context.strokeRect(start + " + x_pos + ", start + " + y_pos + ", " + b_width + ", " + b_height + ");");
-      builder.append("context.font = \"20px 'Arial'\";");
-      builder.append("context.strokeText('" + block.width + "x" + block.height + "', " + (x_pos + b_width / 10) + ", " + (y_pos + b_height) + ");");
-      builder.append("context.closePath();");
+      builder.append("</script>\n");
+    } else {
+      builder.append("<p>No way to solve this problem.</p>\n");
     }
-    builder.append("</script>");
-    builder.append("</html>");
+    builder.append("</html>\n");
     String html = builder.toString();
-    File file = new File("./src/blockPuzzle/result.html");
+    File file = new File(HTML_FILE);
     try {
       FileWriter filewriter = new FileWriter(file);
       filewriter.write(html);
@@ -204,7 +261,8 @@ public class BlockPuzzle {
     }
   }
 
-  private boolean allocateItem(Block block, int[] position) {
+  // Allocate one block to the specified position if possible
+  private boolean allocateBlock(Block block, int[] position) {
     if (!checkAllocatable(block, position)) {
       return false;
     }
@@ -222,8 +280,9 @@ public class BlockPuzzle {
     }
     return true;
   }
-  
-  private boolean removeItem(Block block, int[] position) {
+
+  // Remove one allocated block from the result board
+  private boolean removeBlock(Block block, int[] position) {
     if (!isExist(block, position)) {
       return false;
     }
@@ -240,7 +299,8 @@ public class BlockPuzzle {
     }
     return true;
   }
-  
+
+  // Check if a block is existed on the result board
   private boolean isExist(Block block, int[] position) {
     if ((block.width + position[0] > result_width) || (block.height + position[1] > result_height)) {
       // Out Of Range
@@ -259,6 +319,7 @@ public class BlockPuzzle {
     return true;
   }
 
+  // Check if good place to allocate is there?
   private boolean checkAllocatable(Block block, int[] position) {
     if ((block.width + position[0] > result_width) || (block.height + position[1] > result_height)) {
       // Out Of Range
@@ -276,7 +337,8 @@ public class BlockPuzzle {
     }
     return true;
   }
-  
+
+  // Get the closest empty position
   private int[] getClosestEmpty() {
     for (int x = 0; x < result_width; x++) {
       for (int y = 0; y < result_height; y++) {
@@ -288,8 +350,8 @@ public class BlockPuzzle {
     }
     return null;
   }
-  
-  /*
+
+  /**********************************************
    * == result ==
    *     211
    *     554
@@ -312,6 +374,9 @@ public class BlockPuzzle {
       blocks.add(new Block(2, 1, blockNumber++));
       blocks.add(new Block(2, 2, blockNumber++));
       blocks.add(new Block(1, 1, blockNumber++));
+    } else if (type == 3) {
+      blocks.add(new Block(5, 5, blockNumber++));
+      blocks.add(new Block(8, 8, blockNumber++));
     }
   }
 }
