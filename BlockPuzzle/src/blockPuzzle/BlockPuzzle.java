@@ -16,7 +16,7 @@ public class BlockPuzzle {
   // Variable for the whole result board
   private int[][] result; // -1 : empty, 1~N(n) : filled by item "n"
   private int result_height = 0, result_width = 0;
-  private static final String HTML_FILE = "./src/blockPuzzle/result.html";
+  private static final String HTML_FILE = new File("").getAbsolutePath() + "/result.html";
 
   // Class for each block
   public class Block {
@@ -90,7 +90,6 @@ public class BlockPuzzle {
       bp2.printResult();
       bp2.outputAsHtml();
     }
-    */
     int N3 = 6, M3 = 4;
     BlockPuzzle bp3 = new BlockPuzzle(N3, M3);
     bp3.setTestData(3);
@@ -108,6 +107,7 @@ public class BlockPuzzle {
       bp3.printResult();
       bp3.outputAsHtml(res);
     }
+    */
   }
 
   // Constructor
@@ -211,11 +211,12 @@ public class BlockPuzzle {
     builder.append("<!DOCTYPE html>\n");
     builder.append("<html lang=\"en\">\n");
     builder.append("<head><title>blockPuzzle</title></head>\n");
-    builder.append("<body><h1>The result of test block (" + result_height + "x" + result_width + " )</h1></body>\n");
+    builder.append("<body><h1>The result of test block (" + result_height + "x" + result_width
+        + " )</h1></body>\n");
     if (success) {
       int cell_size = 100;
-      builder.append("<canvas id=\"result\" width=\" " + (result_width * 100 + 20) + "\" height=\" "
-          + (result_height * 100 + 20) + "\">\n");
+      builder.append("<canvas id=\"result\" width=\" " + (result_width * 100 + 20)
+          + "\" height=\" " + (result_height * 100 + 20) + "\">\n");
       builder.append("<p>This html uses canvas style</p>\n");
       builder.append("</canvas>\n");
       builder.append("<script>\n");
@@ -234,11 +235,11 @@ public class BlockPuzzle {
         int b_width = cell_size * block.width;
         int b_height = cell_size * block.height;
         builder.append("context.lineWidth = 5;\n");
-        builder.append("context.strokeRect(start + " + x_pos + ", start + " + y_pos + ", " + b_width
-            + ", " + b_height + ");\n");
+        builder.append("context.strokeRect(start + " + x_pos + ", start + " + y_pos + ", "
+            + b_width + ", " + b_height + ");\n");
         builder.append("context.fillStyle = '#aaaaff';\n");
         builder.append("context.fillRect(start + " + x_pos + ", start + " + y_pos + ", " + b_width
-          + ", " + b_height + ");\n");
+            + ", " + b_height + ");\n");
         builder.append("context.font = \"20px 'Arial'\";\n");
         builder.append("context.lineWidth = 1;\n");
         builder.append("context.strokeText('" + block.height + "x" + block.width + "', "
@@ -251,6 +252,7 @@ public class BlockPuzzle {
     }
     builder.append("</html>\n");
     String html = builder.toString();
+    System.out.println(HTML_FILE);
     File file = new File(HTML_FILE);
     try {
       FileWriter filewriter = new FileWriter(file);
@@ -352,11 +354,7 @@ public class BlockPuzzle {
   }
 
   /**********************************************
-   * == result ==
-   *     211
-   *     554
-   *     554
-   *     553
+   * == result == 211 554 554 553
    */
   private void setTestData(int type) {
     if (type == 1) {

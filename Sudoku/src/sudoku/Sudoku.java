@@ -11,8 +11,8 @@ public class Sudoku {
   private boolean debug = true;
   private static final int SUDOKU_SIZE = 9;
   private static int[][] original = new int[SUDOKU_SIZE][SUDOKU_SIZE];
-  private static final String INPUT_FILENAME = "./src/sudoku/input.txt";
-  private static final String OUTPUT_FILENAME = "./src/sudoku/output.txt";
+  private static final String INPUT_FILENAME = new File("").getAbsolutePath() + "/input.txt";
+  private static final String OUTPUT_FILENAME = new File("").getAbsolutePath() + "/output.txt";
   private boolean isComplete = false;
 
   /**
