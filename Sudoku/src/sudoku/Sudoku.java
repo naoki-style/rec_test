@@ -11,13 +11,16 @@ import java.io.IOException;
  * Output : "output.txt" if it can be solved.
  *          Otherwise, print "This cannot be solved." to standard out.
  *  * Precondition : 9 x 9
+ * 
+ * Usage : "> java sudoku/Sudoku filename"
+ *             (If you don't specify the filename, /sudoku/input.txt will be used.)
  */
 public class Sudoku {
   private int[][] cell;
   private static boolean test = false;
   private static final int SUDOKU_SIZE = 9;
   private static int[][] original = new int[SUDOKU_SIZE][SUDOKU_SIZE];
-  private static final String INPUT_FILENAME = new File("").getAbsolutePath() + "/input.txt";
+  private static final String INPUT_FILENAME = new File("").getAbsolutePath() + "/sudoku/input.txt";
   private static final String OUTPUT_FILENAME = new File("").getAbsolutePath() + "/output.txt";
   private boolean isComplete = false;
 
