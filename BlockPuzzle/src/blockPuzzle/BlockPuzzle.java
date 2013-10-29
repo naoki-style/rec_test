@@ -9,9 +9,14 @@ import java.util.Queue;
 /*
  * Input  : [N, M], [(n1, m1), (n2, m2), ..., (ni, mi)]
  * Output : figure with html format
+ * 
+ * Usage : "> java blockPuzzle/BlockPuzzle [N,M] [n1,m1] [n2,m2] ... [ni,mi]"
+ *         ex) java block Puzzle/BlockPuzzle [4,3] [1,2] [1,1] [1,1] [2,1] [3,2]
+ *             (If input parameters are omitted, this parameter is used.)
+ *            A html can be found on the same location.
  */
 public class BlockPuzzle {
-  private static boolean debug = true;
+  private static boolean debug = false;
 
   // Variable for the whole result board
   private int[][] result; // -1 : empty, 1~N(n) : filled by item "n"
@@ -57,8 +62,21 @@ public class BlockPuzzle {
    */
   public static void main(String[] args) {
     int N1 = 4, M1 = 3;
+    int[] size = new int[2];
+    if (args.length != 0) {
+      size = getResultSize(args[0]);
+      if (size != null) {
+        N1 = size[0];
+        M1 = size[1];
+      }
+    }
     BlockPuzzle bp1 = new BlockPuzzle(N1, M1);
-    bp1.setTestData(1);
+    if (size == null) {
+      bp1.setTestData(1);
+    } else if (!bp1.setData(args)) {
+      System.out.println("fail : size unmatch");
+      return;
+    }
     bp1.initializeResultArea();
     if (debug) {
       bp1.printResult();
@@ -67,7 +85,7 @@ public class BlockPuzzle {
     if (res) {
       System.out.println("success");
     } else {
-      System.out.println("fail");
+      System.out.println("fail : cannot allocate all");
     }
     if (debug) {
       bp1.printResult();
@@ -110,6 +128,34 @@ public class BlockPuzzle {
     */
   }
 
+  private static int[] getResultSize(String args) {
+    if (args == null) {
+      return null;
+    }
+    int[] res = new int[2];
+    StringBuilder[] size = new StringBuilder[2];
+    size[0] = new StringBuilder();
+    size[1] = new StringBuilder();
+    int pos = 0;
+    for(int i = 0; i < args.length(); i++) {
+      char tmp = args.charAt(i);
+      if('0' <= tmp && tmp <= '9') {
+        size[pos].append(tmp);
+      } else if (tmp == ',') {
+        if (1 <= pos++) {
+          break;
+        }
+      }
+    }
+    if (pos != 1) {
+      return null;
+    }
+    res[0] = Integer.valueOf(size[0].toString());
+    res[1] = Integer.valueOf(size[1].toString());
+    return res;
+  }
+
+
   // Constructor
   BlockPuzzle(int h, int w, Queue<Block> b) {
     result_height = h;
@@ -124,7 +170,7 @@ public class BlockPuzzle {
     result_width = w;
     result = new int[result_width][result_height];
   }
-
+  
   // Add a block to Queue
   private void addBlock(Block b) {
     blocks.add(b);
@@ -252,7 +298,6 @@ public class BlockPuzzle {
     }
     builder.append("</html>\n");
     String html = builder.toString();
-    System.out.println(HTML_FILE);
     File file = new File(HTML_FILE);
     try {
       FileWriter filewriter = new FileWriter(file);
@@ -352,9 +397,50 @@ public class BlockPuzzle {
     }
     return null;
   }
+  
+  private boolean setData(String[] data) {
+    if (data == null || data.length < 2) {
+      return false;
+    }
+    int square_sum = 0;
+    for (int i = 1; i < data.length; i++) {
+      String item = data[i];
+      int[] number = new int[2];
+      StringBuilder[] size = new StringBuilder[2];
+      size[0] = new StringBuilder();
+      size[1] = new StringBuilder();
+      int pos = 0;
+      for(int j = 0; j < item.length(); j++) {
+        char tmp = item.charAt(j);
+        if('0' <= tmp && tmp <= '9') {
+          size[pos].append(tmp);
+        } else if (tmp == ',') {
+          if (1 <= pos++) {
+            break;
+          }
+        }
+      }
+      if (pos != 1) {
+        return false;
+      }
+      number[0] = Integer.valueOf(size[0].toString());
+      number[1] = Integer.valueOf(size[1].toString());
+      square_sum += number[0] * number[1];
+      blocks.add(new Block(number[0], number[1], blockNumber++));
+    }
+    if (square_sum != (result_height * result_width)) {
+      return false;
+    }
+    return true;
+  }
+  
 
   /**********************************************
-   * == result == 211 554 554 553
+   * == result ==
+   *     211
+   *     554
+   *     554
+   *     553
    */
   private void setTestData(int type) {
     if (type == 1) {

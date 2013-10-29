@@ -5,10 +5,13 @@ import java.util.List;
 
 /*
  * Assumption
- *  1. Not serial numbers
+ *  1. Numbers are not sequential. [1 -> 3 -> 10 -> 20] is possible.
  *  2. n(L) is max(N(X))
- *  3. Result shall be pairs of "combination"(printList(0))
- *      if full lists, then printList(1)
+ *  3. Result : If "printList(0)", output the combinations.
+ *              If "printList(1)", sequence of numbers are considered.
+ * 
+ * Usage : "> java cyclicList/CyclicList L"
+ *         (L : a length of Linked List)
  */
 public class CyclicList {
   private int L = 0;
@@ -19,7 +22,13 @@ public class CyclicList {
    * @param args
    */
   public static void main(String[] args) {
-    CyclicList list = new CyclicList(4);
+    int sizeOfList;
+    if (args.length == 0 || args[0] == null || args[0].isEmpty() ) {
+      sizeOfList = 4;
+    } else {
+      sizeOfList = Integer.valueOf(args[0]);
+    }
+    CyclicList list = new CyclicList(sizeOfList);
     boolean res = list.findList();
     if (res) {
       list.printList(1);
@@ -99,7 +108,10 @@ public class CyclicList {
       for (int i = 0; i < lists.size(); i++) {
         int[] data = lists.get(i);
         for (int j = data.length - 1; j >= 0; j--) {
-          System.out.print(data[j] + "->");
+          System.out.print(data[j]);
+          if (j != 0) {
+            System.out.print("->");
+          }
         }
         System.out.println();
       }
@@ -107,7 +119,7 @@ public class CyclicList {
       for (int i = 0; i < lists.size(); i++) {
         int[] data = lists.get(i);
         boolean[] used = new boolean[data.length + 1];
-        for (int j = 0; j < lists.size(); j++) {
+        for (int j = 0; j < used.length; j++) {
           used[j] = false; 
         }
         // 1st item must be "1"
@@ -128,8 +140,11 @@ public class CyclicList {
       if (create[1] >= create[create.length - 1]) {
         return;
       }
-      for (int i : create) {
-        System.out.print(i + "->");
+      for (int i = 0; i < create.length; i++) {
+        System.out.print(create[i]);
+        if (i != create.length - 1) {
+          System.out.print("->");
+        }
       }
       System.out.println();
     } else {
